@@ -16,6 +16,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Beginner-proof: if the files were uploaded inside sub-folders (for
+      # example "upload-1-of-3-root-and-public"), move them up to the top level.
+      - name: Tidy uploaded folders
+        run: |
+          for d in */; do
+            d="${d%/}"
+            [ -d "$d" ] || continue
+            case "$d" in android|src|public|node_modules) continue;; esac
+            echo "Merging $d into the project root"
+            cp -rn "$d"/. .
+          done
+          ls
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
