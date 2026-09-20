@@ -11,6 +11,8 @@ jobs:
   apk:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      contents: write   # lets the workflow publish the APK on the Releases page
     env:
       ELECTRON_SKIP_BINARY_DOWNLOAD: '1'   # the desktop app's binary isn't needed here
     steps:
@@ -73,3 +75,18 @@ jobs:
           name: mausam-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
+      # Puts Mausam.apk on the Releases page: a plain .apk any phone can download
+      # directly in Chrome (no zip, no WhatsApp). If this step ever fails, the APK
+      # is still available under "Artifacts" on the run page.
+      - name: Publish APK to the Releases page
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk Mausam.apk
+          gh release delete latest --yes --cleanup-tag || true
+          gh release create latest Mausam.apk --target "$GITHUB_SHA" \
+            --title "Mausam Android app (latest build)" \
+            --notes "Download Mausam.apk on your Android phone (Android 7.0 or newer), open it from your Downloads folder, and allow Install unknown apps if asked."
