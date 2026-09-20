@@ -1,0 +1,53 @@
+name: Build Android APK
+
+# Free cloud build: GitHub compiles the APK for you, no Android Studio needed.
+# Run it from the "Actions" tab -> "Build Android APK" -> "Run workflow".
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: '1'   # the desktop app's binary isn't needed here
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app and sync into the Android project
+        run: npm run cap:sync
+
+      - name: Build debug APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Check the APK is valid
+        run: |
+          APK=android/app/build/outputs/apk/debug/app-debug.apk
+          ls -l "$APK"
+          unzip -l "$APK" | grep -E "AndroidManifest.xml|classes.dex|assets/public/index.html"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mausam-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
