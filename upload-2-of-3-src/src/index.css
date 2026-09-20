@@ -1,0 +1,298 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+@theme {
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  --color-bg-primary: #06141a;
+  --color-bg-secondary: #09232a;
+  --color-bg-dark: #061318;
+  --color-bg-ambient-1: #0e3b38;
+  --color-bg-ambient-2: #123d35;
+
+  --color-panel: #0d2028;
+  --color-panel-hover: #112c35;
+  --color-panel-border: #1d3a40;
+
+  --color-accent: #22c55e;
+  --color-accent-teal: #14b8a6;
+  --color-accent-blue: #38bdf8;
+  --color-warning: #f59e0b;
+  --color-critical: #ef4444;
+  --color-info: #38bdf8;
+  --color-advanced: #a78bfa;
+
+  --color-text-primary: #e6f1f0;
+  --color-text-secondary: #9db4b8;
+  --color-text-muted: #6b8286;
+
+  --animate-fade-in: fade-in 0.35s ease-out both;
+  --animate-slide-up: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-count-pulse: count-pulse 0.6s ease-out;
+  --animate-skeleton: skeleton-sheen 1.6s ease-in-out infinite;
+  --animate-drift-cloud: drift-cloud linear infinite;
+  --animate-fall-rain: fall-rain linear infinite;
+  --animate-fall-snow: fall-snow linear infinite;
+  --animate-sun-pulse: sun-pulse 4s ease-in-out infinite;
+  --animate-drift-fog: drift-fog linear infinite;
+  --animate-lightning-flash: lightning-flash 5s ease-in-out infinite;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes count-pulse {
+    0% { opacity: 0.4; transform: scale(0.98); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes skeleton-sheen {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  @keyframes drift-cloud {
+    0% { transform: translateX(-10%); }
+    100% { transform: translateX(110%); }
+  }
+  @keyframes fall-rain {
+    0% { transform: translateY(-20%); opacity: 0; }
+    10% { opacity: 1; }
+    100% { transform: translateY(220%); opacity: 0.3; }
+  }
+  @keyframes fall-snow {
+    0% { transform: translate(0, -20%) rotate(0deg); opacity: 0; }
+    10% { opacity: 1; }
+    100% { transform: translate(15px, 220%) rotate(180deg); opacity: 0.4; }
+  }
+  @keyframes sun-pulse {
+    0%, 100% { opacity: 0.55; transform: scale(1); }
+    50% { opacity: 0.85; transform: scale(1.08); }
+  }
+  @keyframes drift-fog {
+    0% { transform: translateX(-15%); opacity: 0.25; }
+    50% { opacity: 0.5; }
+    100% { transform: translateX(15%); opacity: 0.25; }
+  }
+  @keyframes lightning-flash {
+    0%, 92%, 100% { opacity: 0; }
+    93%, 96% { opacity: 0.8; }
+    94% { opacity: 0.2; }
+    95% { opacity: 0.6; }
+  }
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+/* ---------------------------------------------------------------------
+   Light theme overrides. Every component references colors via
+   var(--color-*), so re-declaring these on [data-theme="light"] retheme
+   the entire app with no per-component changes needed. Dark values above
+   in @theme remain the default/fallback.
+--------------------------------------------------------------------- */
+:root[data-theme='light'] {
+  --color-bg-primary: #f5f8f8;
+  --color-bg-secondary: #ffffff;
+  --color-bg-dark: #eef3f3;
+  --color-bg-ambient-1: #bfe9df;
+  --color-bg-ambient-2: #cdeee0;
+
+  --color-panel: #ffffff;
+  --color-panel-hover: #eef6f5;
+  --color-panel-border: #dde8e7;
+
+  --color-accent: #16a34a;
+  --color-accent-teal: #0d9488;
+  --color-accent-blue: #0284c7;
+  --color-warning: #d97706;
+  --color-critical: #dc2626;
+  --color-info: #0284c7;
+  --color-advanced: #7c3aed;
+
+  --color-text-primary: #0b1f22;
+  --color-text-secondary: #4a6265;
+  --color-text-muted: #7c9296;
+}
+
+/* Smooth, gentle cross-fade whenever the color tokens change (theme
+   toggle). Excludes layout/transform properties so nothing shifts or
+   jumps — only colors settle in. Respects prefers-reduced-motion below. */
+*, *::before, *::after {
+  transition: background-color 0.35s ease, border-color 0.35s ease, color 0.35s ease, fill 0.35s ease;
+}
+
+/* View Transitions API: a soft cross-fade for the whole page when the
+   toggle triggers document.startViewTransition (Chromium — desktop app
+   and Android). Browsers without support simply skip this and fall back
+   to the CSS transition above. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.4s;
+  animation-timing-function: ease;
+}
+
+body {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 600px at 12% -10%, color-mix(in srgb, var(--color-bg-ambient-1) 35%, transparent), transparent 60%),
+    radial-gradient(1000px 500px at 90% 10%, color-mix(in srgb, var(--color-bg-ambient-2) 30%, transparent), transparent 55%),
+    radial-gradient(800px 800px at 50% 120%, color-mix(in srgb, var(--color-bg-secondary) 45%, transparent), transparent 60%),
+    var(--color-bg-primary);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+
+/* Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-panel-border) transparent;
+}
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-thumb { background: var(--color-panel-border); border-radius: 8px; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+/* Focus visibility for accessibility */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-accent-blue);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.skeleton {
+  background-image: linear-gradient(
+    90deg,
+    var(--color-panel) 25%,
+    var(--color-panel-hover) 37%,
+    var(--color-panel) 63%
+  );
+  background-size: 400% 100%;
+  animation: var(--animate-skeleton);
+}
+
+.leaflet-container {
+  background: var(--color-bg-dark) !important;
+  font-family: var(--font-sans);
+}
+.leaflet-popup-content-wrapper {
+  background: var(--color-panel) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-panel-border);
+  border-radius: 10px;
+}
+.leaflet-popup-tip {
+  background: var(--color-panel) !important;
+}
+.map-tiles-dark {
+  filter: brightness(0.62) saturate(0.85) invert(1) hue-rotate(180deg) contrast(0.92);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Mobile shell skin — sky-blue, glassy cards. Only applies when the
+   phone layout is active (data-shell="mobile"); the desktop layout and
+   Electron build keep the original look untouched. Semantic colors
+   (accent = good/green, warning, critical) are deliberately NOT changed.
+--------------------------------------------------------------------- */
+:root {
+  /* Capacitor injects --safe-area-inset-* on Android; env() covers browsers/iOS. */
+  --sat: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --sab: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --sal: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+  --sar: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
+}
+
+:root[data-shell='mobile'][data-theme='light'] {
+  --color-bg-primary: #eaf3fd;
+  --color-bg-secondary: #ffffff;
+  --color-bg-dark: #dfeaf7;
+  --color-bg-ambient-1: #cfe3f8;
+  --color-bg-ambient-2: #dcebfa;
+  --color-panel: #ffffff;
+  --color-panel-hover: #f0f6fd;
+  --color-panel-border: #d3e3f5;
+  --color-accent-teal: #1d6fdc;
+  --color-text-primary: #0b1b3b;
+  --color-text-secondary: #43567a;
+  --color-text-muted: #61759a;
+  --color-brand: #1d6fdc;
+  --color-brand-soft: #e2eefc;
+}
+:root[data-shell='mobile'][data-theme='dark'] {
+  --color-bg-primary: #06101f;
+  --color-bg-secondary: #0b1a30;
+  --color-bg-dark: #081527;
+  --color-bg-ambient-1: #0f2a4d;
+  --color-bg-ambient-2: #0c2444;
+  --color-panel: #0f2240;
+  --color-panel-hover: #163055;
+  --color-panel-border: #22406b;
+  --color-accent-teal: #4da3ff;
+  --color-text-primary: #e8f1ff;
+  --color-text-secondary: #b1c4e2;
+  --color-text-muted: #8aa1c4;
+  --color-brand: #4da3ff;
+  --color-brand-soft: #123056;
+}
+:root[data-shell='mobile'] #root {
+  background: var(--color-bg-primary);
+  background-attachment: scroll;
+}
+/* Phones: no text-size surprises, no rubber-band flash, no double-tap zoom delay. */
+:root[data-shell='mobile'] body {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+:root[data-shell='mobile'] button,
+:root[data-shell='mobile'] a,
+:root[data-shell='mobile'] [role='button'] {
+  touch-action: manipulation;
+}
+/* Fewer colour transitions on phones (cheaper, and avoids flicker on screen change). */
+:root[data-shell='mobile'] *,
+:root[data-shell='mobile'] *::before,
+:root[data-shell='mobile'] *::after {
+  transition-duration: 0.15s;
+}
+
+.m-scroll-x {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.m-scroll-x::-webkit-scrollbar { display: none; }
+
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.animate-sheet-up { animation: sheet-up 0.32s cubic-bezier(0.16, 1, 0.3, 1) both; }
