@@ -18,6 +18,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Applies the update zips you uploaded (final-update-*.zip) on top of the repo,
+      # so no file can be missed by GitHub's 100-file upload limit.
+      - name: Apply update zips
+        run: |
+          for z in final-update-*.zip; do
+            [ -f "$z" ] || continue
+            echo "Applying $z"
+            unzip -o -q "$z"
+          done
+
       # Beginner-proof: if the files were uploaded inside sub-folders (for
       # example "upload-1-of-3-root-and-public"), move them up to the top level.
       - name: Tidy uploaded folders
